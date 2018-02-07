@@ -1,0 +1,802 @@
+<script type="text/template" id="sessionTemplate">
+
+    <ul class="nav navbar-nav navbar-right" id="sessionDropdown">
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                {{#user}}
+                    {{username}}
+                {{/user}}
+            <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                <li data-action="stats">
+                                    <a href="#">
+                                        View My Stats
+                                    </a>
+                                </li>
+                <li>
+                    <a data-toggle="modal" href="changelog.html" data-target="#changelogModal">Changelog</a>
+                </li>
+                <li>
+                    <a data-toggle="modal" data-target="#aboutModal">Help</a>
+                </li>
+                <li data-action="logout">
+                    <a>Logout</a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+
+</script>
+
+<script type="text/template" id="urlErrorTemplate">
+
+    <div class="alert alert-danger alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <p><strong>Uh oh! There's a problem with the url.</strong></p>
+        <p>Make sure you've entered the url to your portal's web adaptor.</p>
+        <p>example: https://mydomain.com/portal</p>
+    </div>
+
+</script>
+
+<script type="text/template" id="loginErrorTemplate">
+
+    <div class="alert alert-danger alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>Whoops!</strong> Double check your username and password.
+    </div>
+
+</script>
+
+<script type="text/template" id="serviceNameErrorTemplate">
+
+    <div class="alert alert-danger alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <p><strong>{{ name }} is already in use.</strong> Try a different name.</p>
+    </div>
+
+</script>
+
+<script type="text/template" id="searchTemplate">
+
+    <form id="searchForm" class="navbar-form navbar-left" role="search">
+        <div class="form-group">
+            <div class="input-group add-on">
+                <div class="form-group has-feedback">
+                    <input id="searchText" type="text" class="form-control" placeholder="Search My Content">
+                    <i class="glyphicon glyphicon-search form-control-feedback" style="color:black"></i>
+                </div>
+                <div class="input-group-btn">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                        </button>
+                        <ul id="searchMenu" class="dropdown-menu" role="menu">
+                            <li id="searchAGO" data-url="https://www.arcgis.com/"><a href="#">Search ArcGIS Online</a></li>
+                            <li id="searchPortal" data-url={{ portal }} data-id={{ id }}><a href="#">Search {{ name }}</a></li>
+                            <li id="searchContent" data-url={{ portal }} class="active"><a href="#">Search My Content</a></li>
+                            <li class="divider"></li>
+                            <li data-action="advancedSearch"><a href="#">Advanced Search</a></li>
+                            <li class="divider"></li>
+                            <li data-action="viewMyContent"><a href="#">View My Content</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</script>
+
+<script type="text/template" id="folderTemplate">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading" data-title="{{ title }}">
+            <a class="accordion-toggle panel-title" data-toggle="collapse" data-parent="#folderAccordion" href="#collapse_{{ id }}"><span data-originalcount="{{ count }}" class="badge pull-right"> {{ count }} </span> {{ title }} </a>
+
+            <!-- This below section is for a select all/none menu option for the folders. Currently this is not fully implemented yet so it is concealed. -->
+            <!--div class="dropdown pull-right panel-title multiplemode" style="display:none; margin-right: 5px; font-size: 0.7em;">
+               <a id="dLabel" role="button" data-toggle="dropdown" data-target="#">Select <span class="caret"></span></a>
+               <ul class="dropdown-menu panel-title" style="font-size: 10px;" role="menu" aria-labelledby="dLabel">
+                  <li><a href="#">All</a></li> 
+                  <li><a href="#">None</a></li>
+              </ul>
+            </div-->
+
+        </div>
+        <div id="collapse_{{ id }}" class="panel-body panel-collapse collapse" data-folder="{{ id }}">
+            <!-- content gets inserted here -->
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="dropFolderTemplate">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <a class="accordion-toggle panel-title" data-toggle="collapse" data-parent="#folderAccordion" href="#collapseDest_{{ id }}">  <span class="fa fa-caret-down" aria-hidden="true" style="padding-right:5px"></span>{{ title }} </a>
+        </div>
+        <div id="collapseDest_{{ id }}" class="panel-body panel-collapse collapse in" data-folder="{{ id }}">
+            <div class="dropArea">
+                <div id="dropFolder_{{ id }}" class="dropBorder">
+                    Drop items to copy to this folder
+                    <!-- content gets dropped here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="contentTemplate">
+
+    <div id="{{ id }}" class="btn btn-default btn-block content" style="opacity: 1;" type="button" data-id="{{ id }}" data-type="{{ type }}" data-title="{{ title }}" data-owner="{{ owner }}" data-itemmetadata="{{ itemmetadata }}" data-created="{{ created }}" data-modified="{{ modified }}" data-tags="{{ tags }}" data-ownerfolder="{{ ownerFolder }}" data-portal="{{ portal }}">
+        <span class="icon {{ icon }}"></span>
+        <span>{{ title }}</span> <!--[[[{{countindex}}]]] <!-- for testing only-->
+
+        <span class="pull-right">
+            <a class="contentToolTip hideToolTipOption" style="visibility: hidden; margin-right: 3px;" href="#" data-html="true" data-toggle="tooltip" data-placement="bottom" title="<b>Tags:</b><ul>{{tooltipText.tags}}</ul>{{#tooltipText.id}}<b>Id:</b><ul>{{tooltipText.id}}</ul>{{/tooltipText.id}}{{#tooltipText.access}}<b>Access:</b><ul>{{tooltipText.access}}</ul>{{/tooltipText.access}}">
+			    <span style="vertical-align: middle;" class="fa fa-tag fa-1" aria-hidden="true"></span>
+			</a>
+            <a class="moreInfo hideToolTipOption" style="visibility: hidden;" title="Item Description">
+				<span style="vertical-align: middle;" class="fa fa-external-link fa-1" aria-hidden="true"></span>
+			</a>
+        </span>
+
+        {{#owner}}
+            <div class="row" style="font-size: 0.7em;">
+                <div class="col-md-6">
+                    <div class="text-muted">Owner</div>
+                    <div>{{ owner }}</div>
+                </div>
+                <div class="col-md-3 text-right">
+                    <div class="text-muted">Created</div>
+                    <div>{{ created }}</div>
+                </div>
+                <div class="col-md-3 calContainer text-right">
+                    <div class="text-muted">Modified</div>
+                    <div class="text-right">{{ modified }}</div>
+                </div>
+            </div>
+        {{/owner}}
+
+        {{#fullname}}
+            <div class="row" style="font-size: 0.8em;">
+                <div class="col-md-5"> 
+                    <div class="text-muted">Name</div>
+                    <div>{{ fullname }}</div>
+                </div>
+                <div class="col-md-3 text-right">
+                    <div class="text-muted">Created</div>
+                    <div>{{ created }}</div>
+                </div>
+                <div class="col-md-4 text-right">
+                    <div class="text-muted">Modified</div>
+                    <div>{{ modified }}</div>
+                </div>
+            </div>
+        {{/fullname}}
+    </div>
+
+</script>
+
+<script type="text/template" id="contentTypeErrorTemplate">
+
+    <div id="{{ id }}_alert" class="alert alert-info alert-dismissable" style="position:absolute; z-index: 99">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <strong>Sorry!</strong> {{ type }}s aren't supported yet.
+    </div>
+
+</script>
+
+<script type="text/template" id="contentCopyErrorTemplate">
+
+    <div id="{{ id }}_alert" class="alert alert-danger alert-dismissable" style="position:absolute; z-index: 99">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <strong>Copying failed!</strong> {{ message }}
+    </div>
+
+</script>
+
+<script type="text/template" id="inspectUserTemplate">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">{{ title }}</h2>
+        </div>
+        <div class="panel-body" id="itemDescription">
+            <ul class="list-group">
+                <li class="list-group-item">Description
+                    <a href="{{ url }}/home/item.html?id={{ id }}" target="_blank"> (Link to Item Details)</a>
+                </li>
+                <li class="list-group-item">
+                    <div class="btn-group btn-group-lg edit-controls" role="group">
+                        <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
+                            <span class="fa fa-lg fa-save" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="btn btn-default" data-action="startEdits" data-container="Description" aria-label="Left Align">
+                            <span class="fa fa-lg fa-pencil" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <pre id="descriptionJson">{{ description }}</pre>
+                </li>
+            </ul>
+            {{ #data }}
+                <br>
+                <ul class="list-group">
+                    <li class="list-group-item">Data</li>
+                    <li class="list-group-item">
+                        <div class="btn-group btn-group-lg edit-controls" role="group">
+                            <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
+                                <span class="fa fa-lg fa-save" aria-hidden="true"></span>
+                            </button>
+                            <button type="button" class="btn btn-default" data-action="startEdits" data-container="Data" aria-label="Left Align">
+                                <span class="fa fa-lg fa-pencil" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                        <pre id="dataJson">{{ data }}</pre>
+                    </li>
+                </ul>
+            {{ /data }}
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="inspectTemplate">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">{{ title }}</h2>
+        </div>
+        <div class="panel-body" id="itemDescription">
+            <ul class="list-group">
+                <li class="list-group-item">Description
+                    <a href="{{ url }}/home/item.html?id={{ id }}" target="_blank"> (Link to Item Details)</a>
+                </li>
+                <li class="list-group-item">
+                    <div class="btn-group btn-group-lg edit-controls" role="group">
+                        <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
+                            <span class="fa fa-lg fa-save" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="btn btn-default" data-action="startEdits" data-container="Description" aria-label="Left Align">
+                            <span class="fa fa-lg fa-pencil" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <pre id="descriptionJson">{{ description }}</pre>
+                </li>
+            </ul>
+            {{ #data }}
+                <br>
+                <ul class="list-group">
+                    <li class="list-group-item">Data</li>
+                    <li class="list-group-item">
+                        <div class="btn-group btn-group-lg edit-controls" role="group">
+                            <button type="button" class="btn btn-default disabled" data-action="saveEdits" aria-label="Left Align">
+                                <span class="fa fa-lg fa-save" aria-hidden="true"></span>
+                            </button>
+                            <button type="button" class="btn btn-default" data-action="startEdits" data-container="Data" aria-label="Left Align">
+                                <span class="fa fa-lg fa-pencil" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                        <pre id="dataJson">{{ data }}</pre>
+                    </li>
+                </ul>
+            {{ /data }}
+            {{! Add a download link }}
+            {{ #downloadLink }}
+                <br>
+                <a href="{{ downloadLink }}" target="_blank" class="btn btn-link btn-lg btn-block" role="button">Download {{ title }}</a>
+            {{ /downloadLink }}
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="statsTemplate">
+
+    <!-- User stats modal -->
+    <div id="statsModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="statsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h3 id="statsModalLabel">Stats for {{ username }}</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <img src="{{ thumbnail }}" class="img-rounded" style="max-width: 130px; max-height: 130px; margin-top: 10px">
+                            </div>
+                            <div class="col-md-9 calContainer">
+                                <div class="col-md-1 calArrow" style="height: auto"><i id="calPrev" class="glyphicon glyphicon-backward"></i></div>
+                                <div class="col-md-10" id="statsCalendar" style="width: auto">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h4 class="text-center muted">Recent Activity</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-1 calArrow" style="height: auto"><i id="calNext" class="glyphicon glyphicon-forward"></i></div>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <h4 class="text-center">Most Popular Content</h4>
+                            <div id="mostViewedContent"><!--Most Viewed Content table--></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="mostViewedContentTemplate">
+
+    <table class="table table-condensed">
+        <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Views</th>
+        </tr>
+        {{#searchResults}}
+        <tr>
+            <td><a href="{{ itemUrl }}" target="_blank">{{ title }}</a></td>
+            <td>{{ type }}</td>
+            <td>{{ numViews }}</td>
+        </tr>
+        {{/searchResults}}
+    </table>
+
+</script>
+
+<script type="text/template" id="webmapServicesTemplate">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">{{ webmapTitle }}</h2>
+        </div>
+        <div class="panel-body" id="itemDescription">
+            <form role="form">
+                <div class="form-group">
+                    <h4>Operational Layers</h4>
+                    {{ #operationalLayers }}
+                    <div class="form-group">
+                        <label for="{{ id }}">{{ title }}</label>
+                        <input type="text" class="form-control" id="{{ id }}" value="{{ url }}" data-original="{{ url }}">
+                    </div>
+                    {{ /operationalLayers }}
+                    {{ ^operationalLayers }}
+                        No operational layers in this web map.
+                    {{ /operationalLayers }}
+                </div>
+                <br>
+                <div class="form-group">
+                    <h4>Tables</h4>
+                    {{ #tables }}
+                    <div class="form-group">
+                        <label for="{{ id }}">{{ title }}</label>
+                        <input type="text" class="form-control" id="{{ id }}" value="{{ url }}" data-original="{{ url }}">
+                    </div>
+                    {{ /tables }}
+                    {{ ^tables }}
+                        No tables in this web map.
+                    {{ /tables }}
+                </div>
+                <br>
+                <div class="form-group">
+                    <h4>Basemap Layers <small>{{ basemapTitle }}</small></h4>
+                    {{#basemapLayers}}
+                    <div class="form-group">
+                        <label for="{{ id }}">{{ id }}</label>
+                        <input type="text" class="form-control" id="{{ id }}" value="{{ url }}" data-original="{{ url }}">
+                    </div>
+                    {{/basemapLayers}}
+                </div>
+                <div class="pull-right">
+                    <button type="submit" class="btn btn-default" id="btnResetWebmapServices">Reset</button>
+                    <button type="submit" class="btn btn-primary" id="btnUpdateWebmapServices">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="updateSuccessTemplate">
+
+    <div class="alert alert-success alert-dismissable" style="position: absolute; z-index: 99"">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>Success!</strong>
+    </div>
+
+</script>
+
+<script type="text/template" id="updateErrorTemplate">
+
+    <div class="alert alert-danger alert-dismissable" style="position:absolute; z-index: 99">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <strong>Update failed! {{ error.message }}</strong>
+    </div>
+
+</script>
+
+<script type="text/template" id="itemContentTemplate">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">{{ title }}</h2>
+        </div>
+        <div class="panel-body" id="itemDescription>
+            <form role="form">
+                <div class="form-group">
+                    <div class="form-group">
+                        <label for="{{ id }}">URL</label>
+                        <input type="text" class="form-control" id="{{ id }}" value="{{ url }}" data-original="{{ url }}">
+                    </div>
+                </div>
+                <div class="pull-right">
+                    <button type="submit" class="btn btn-default" id="btnResetContentUrl">Reset</button>
+                    <button type="submit" class="btn btn-primary" id="btnUpdateContentUrl">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="addRemoveTagsTemplate">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">Add/Remove Tags</h2>
+        </div>
+        <div class="panel-body" id="itemTags">
+                <div class="input-group">
+                  <div class="input-group-btn">
+                       <button type="button" id="addTagsButton" data-action="changetagaddremove" class="btn btn-default btn-primary active" data-toggle="button">Add</button>
+                       <button type="button" id="removeTagsButton" data-action="changetagaddremove" class="btn btn-default" data-toggle="button">Remove</button>
+                  </div>
+                  <div class="selectcurrent">
+                        <select class="js-example-tags form-control" id="addremovetagsinput" multiple="multiple"></select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                </div>
+
+                <div class="pull-right">
+                    <button type="button" class="btn btn-primary" id="btnUpdateRemoveTags">Update Selected</button>
+                </div>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="updateItemProtectionTemplate">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">Change Delete Protection Status</h2>
+        </div>
+        <div class="panel-body" id="itemTags">
+                <div class="form-group">
+                    <h4>Select item(s) to update and the desired delete protection status before selecting update.</h4>
+                </div>
+                <div class="input-group">
+                  <div class="input-group-btn">
+                       <button type="button" id="enableProtectionBtn" data-action="changeprotection" class="btn btn-default btn-primary active" data-toggle="button">Enable</button>
+                       <button type="button" id="disableProtectionBtn" data-action="changeprotection" class="btn btn-default" data-toggle="button">Disable</button>
+                  </div>
+                </div>
+                <div class="pull-right">
+                    <button type="button" class="btn btn-primary" id="btnUpdateItemProtection">Update Selected</button>
+                </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="deleteContentTemplate">
+        <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">Delete Items</h2>
+        </div>
+        <div class="panel-body">
+                <div class="input-group">
+                    Select the items to delete on the left.
+                </div>
+                <div class="pull-right">
+                    <button type="button" class="btn btn-primary" id="btnDeleteItems">Delete Selected</button>
+                </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="selectItemTemplate">
+        <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">Select item(s)</h2>
+        </div>
+        <div class="panel-body">
+                <div class="input-group">
+                    To start, select desired item(s) on the left.
+                </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="exportResultsToCSVTemplate">
+        <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">Export to CSV File</h2>
+        </div>
+        <div class="panel-body">
+                <div class="input-group">
+                    Select the items to export on the left.
+                </div>
+                <div class="pull-right">
+                    <button type="button" class="btn btn-primary" id="btnExportItems">Export Selected</button>
+                </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="testRegisteredServicesTemplate">
+        <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">Verify Service Status</h2>
+        </div>
+        <div class="panel-body">
+                <div class="input-group">
+                    <p>This test will verify the operating status of all services in the current Portal instance. It may take some time depending on the number of services.
+                    </p>
+                </div>
+                <div class="input-group">
+                    <div class="form-group">
+                            <label for="serviceTestGroup">Test Services : </label>
+                            <div class="btn-group" role="group" aria-label="servicegroups" id="serviceTestGroup">
+                                <button type="button" class="btn btn-default btn-primary active serviceTestFilter" data-action="test">Registered only</button>
+                                <button type="button" class="btn btn-default serviceTestFilter" data-action="test-all">Registered and Webmap-referenced (may be slow)</button>
+                            </div>
+                    </div>
+                    <br />
+                </div>
+                <div id="testServicesResultsPane"></div>
+                <!--div id="exportTestResultsSection" style="display:none; text-align:center; align:center; margin-left: auto; margin-right: auto;">
+                    <button type="button" class="btn btn-primary" id="btnExportTestResults">Export Test Results</button>
+                </div-->
+                <div class="pull-right">
+                    <button type="button" class="btn btn-primary" id="btnVerifyServices">Verify Services</button>
+                </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="reassignOwnershipTemplate">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h2 class="panel-title">Re-assign Ownership</h2>
+            </div>
+            <div class="panel-body">
+                    <form role="form">
+                        <div class="form-group">
+                            <div class="form-group">
+                                <label for="newOwnerValue">New Owner</label>
+                                <input class="form-control" type="text" id="newOwnerValue" placeholder="New Owner" />
+                            </div>
+                        </div>
+                        <br>
+
+                        {{#isItem}}
+                            <div class="form-group">
+                                <div class="form-group">
+                                    <label for="newFolderValue">New Folder Location (will be created if it does not exist)</label>
+                                    <input class="form-control" type="text" id="newFolderValue" placeholder="New Folder" />
+                                </div>
+                            </div>
+                        {{/isItem}}
+
+                        <div class="pull-right">
+                            <button type="button" class="btn btn-primary" id="btnReassignItems">Re-assign Ownership of Selected</button>
+                        </div>
+                    </form>
+            </div>
+    </div>
+</script>
+
+<script type="text/template" id="filterContentTemplate">
+     <div class="panel panel-info filterDefinition" data-filterattribute="{{ filterattribute }}" data-filteroperator="{{ filteroperator }}" data-filtervalue="{{ filtervalue }}" data-filterdefinition="{{ filterdefinition }}">
+            <div class="panel-heading filterPanelHeading">
+                <div style="position: relative;">
+                    <span class="filterTitle">{{ filterTitle }}</span>
+                    <div style="right: 0px; top: 0px; position: absolute;">
+                        <button type="button" data-deletefilter="unused" class="btn btn-default btn-xs">
+                             <span class="glyphicon glyphicon-remove" style="color:red;" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <b>{{ filterDescription }}</b>
+            </div>
+        </div>
+</script>
+
+<script type="text/template" id="filterConjunctionTemplate">
+     <button id="{{ id }}" class="btn btn-default btn-block filter-conjuction" style="opacity: 1; margin-bottom: 20px;" type="button" data-id="{{ id }}" data-type="{{ type }}" data-filterdefinition="{{ filterdefinition }}" data-portal="{{ portal }}">
+        <span class="fa fa-lg fa-arrows-h" aria-hidden="true">&nbsp;(OR)</span>
+     </button>
+</script>
+
+<script type="text/template" id="advancedSearchTemplate">
+    <!-- Advanced search modal -->
+    <div id="advancedSearchModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="advancedSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                    <h3 id="advancedSearchModalLabel">Advanced Search</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                                  <span>
+                                    <h4>Search Location</h4>
+                                  </span>
+                                  <div class="btn-group btn-radio">
+                                    {{ #showArcGISOnline }}
+                                        <button type="button" id="advancedSearchAGO" class="btn btn-default advanced-search-location" data-action="ago">ArcGIS Online (All Content)</button>
+                                    {{ /showArcGISOnline }}
+                                    {{ #portalSelfData.name }}
+                                    <button type="button" id="advancedSearchOrg" class="btn btn-default advanced-search-location" data-id={{ portalSelfData.id }} data-action="org">{{ portalSelfData.name }}</button>
+                                    {{ /portalSelfData.name }}
+                                    <button type="button" id="advancedSearchMyContent" class="btn btn-default advanced-search-location" data-action="mycontent">My Content</button>
+                                  </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                  <span>
+                                    <h4>Search Category</h4>
+                                  </span>
+                                  <div class="btn-group btn-radio">
+                                    <button type="button" id="advancedSearchItems" class="btn btn-default advanced-search-type" data-action="items">Items</button>
+                                    <button type="button" id="advancedSearchGroups" class="btn btn-default advanced-search-type" data-action="groups">Groups</button>
+                                    <button type="button" id="advancedSearchUsers" class="btn btn-default advanced-search-type" data-action="users">Users</button>
+                                  </div>
+                            </div>
+                        </div>
+                        <br />
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h4>
+                                    Create Filter&nbsp;
+                                    <a href="#" data-toggle="popover" title="Creating Filters" data-content="<ul><li><h4>Creating a Filter</h4> Create filters below by filling out the values and selecting <b><i>Add Filter</i></b>.</li>
+                                        <br />
+                                        <li><h4>Multiple filters</h4> A search may have multiple filters applied. All the created filters applied to the search are displayed in the <b><i>Applied Filters</i></b> section. The search will return results that meet every filter's criteria in the order the filters are shown (a logical AND operation).</li>
+                                        <br />
+                                        <li><h4>Multiple Conditions</h4> An attribute may be filtered with multiple conditions. If a filter is created for an attribute that is already being filtered then the newly created filter will be appended to the existing filter as an additional condition (a logical AND operation by default). When searching on multi-valued fields, such as <b>tags</b>, the option is available to toggle between AND and OR to specify the logical relationship between the multiple conditions.</li></ul>">
+                                        <span class="fa fa-question-circle" aria-hidden="true"></span>
+                                    </a>
+                                </h4>
+                            </div>
+                            <div class="col-md-3">
+                              <select class="form-control" id="filterAttributeInput">
+                                <option>Title</option>
+                                <option>Owner</option>
+                                <option>Tag</option>
+                                <option>Last Modified</option>
+                                <option>Type</option>
+                                <!-- Below search types are possible but were requested to not be added yet -->
+                                <!--option>Type Keywords</option-->
+                                <!--option>Uploaded</option-->
+                                <!--option>Access</option-->
+                                <!--option>Description</option-->
+                                <!--option>Group</option-->
+                              </select>
+                            </div>
+                            <div class="col-md-3">
+                              <select class="form-control" id="filterOpInput">
+                                <option value="contains">contains</option>
+                                <option value="not">is not</option>
+                              </select>
+                            </div>
+                            <div class="col-md-3">
+                              <input type="text" class="form-control" id="searchValue">
+                            </div>
+                            <div class="col-md-2">
+                                 <div class="btn-toolbar" role="toolbar" aria-label="Advanced search toolbar">
+                                    <div class="btn-group" role="group" aria-label="First group">
+                                        <button type="button" class="btn btn-default" data-action="addFilter">
+                                                 Add Filter <span class="glyphicon glyphicon-plus-sign" style="color:green;" aria-hidden="true"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <br />
+                        <br />
+                        <div class="row">
+                                <div class="panel panel-primary">
+                                    <div class="panel-heading">
+                                        Applied Filters
+                                    </div>
+                                    <div class="panel-body" id="queryBody"></div>
+                                </div
+                        </div>
+                        <!-- some spacing -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                &nbsp;
+                            </div>
+                            <div class="col-md-6 calContainer">
+                                &nbsp;
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                    <button class="btn btn-primary" data-dismiss="modal" data-action="advancedSearch" aria-hidden="true">Search</button>
+            </div>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="itemTypeDropdownOptions">
+    <select class="form-control" id="searchValue">
+            <option value="CAD Drawing">CAD Drawing</option>
+            <option value="CityEngine Web Scene">CityEngine Web Scene</option>
+            <option value="Code Attachment">Code Attachment</option>
+            <option value="Color Set">Color Set</option>
+            <option value="CSV">CSV</option>
+            <option value="CSV Collection">CSV Collection</option>
+            <option value="Desktop Application">Desktop Application</option>
+            <option value="Document Link">Document Link</option>
+            <option value="Feature Collection">Feature Collection</option>
+            <option value="Feature Collection Template">Feature Collection Template</option>
+            <option value="Feature Service">Feature Service</option>
+            <option value="File Geodatabase">File Geodatabase</option>
+            <option value="Geocoding Service">Geocoding Service</option>
+            <option value="Geodata Service">Geodata Service</option>
+            <option value="Geometry Service">Geometry Service</option>
+            <option value="Geoprocessing Service">Geoprocessing Service</option>
+            <option value="Image">Image</option>
+            <option value="Image Service">Image Service</option>
+            <option value="KML">KML</option>
+            <option value="KML Collection">KML Collection</option>
+            <option value="Map Document">Map Document</option>
+            <option value="Map Service">Map Service</option>
+            <option value="Microsoft Excel">Microsoft Excel</option>
+            <option value="Microsoft PowerPoint">Microsoft PowerPoint</option>
+            <option value="Microsoft Visio">Microsoft Visio</option>
+            <option value="Microsoft Word">Microsoft Word</option>
+            <option value="Mobile Application">Mobile Application</option>
+            <option value="Network Analysis Service">Network Analysis Service</option>
+            <option value="Operations Dashboard Add In">Operations Dashboard Add In</option>
+            <option value="Operations View">Operations View</option>
+            <option value="PDF">PDF</option>
+            <option value="Pro Map">Pro Map</option>
+            <option value="Service Definition">Service Definition</option>
+            <option value="Mobile Application">Mobile Application</option>
+            <option value="Shapefile">Shapefile</option>
+            <option value="Stream Service">Stream Service</option>
+            <option value="Symbol Set">Symbol Set</option>
+            <option value="Tile Package">Tile Package</option>
+            <option value="Web Map">Web Map</option>
+            <option value="Web Mapping Application">Web Mapping Application</option>
+            <option value="Web Scene">Web Scene</option>
+            <option value="WMS">WMS</option>
+            <option value="Workflow Manager Service">Workflow Manager Service</option>
+    </select>
+</script>

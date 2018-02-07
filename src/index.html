@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <title>ArcGIS Online Assistant</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="js/lib/jquery-ui-1.11.4.css"/>
+        <link rel="stylesheet" href="js/lib/bootstrap/css/bootstrap-3.3.4.min.css"/>
+        <link rel="stylesheet" href="css/styles.css"/>
+        <link rel="stylesheet" href="css/typeahead-bootstrap.css"/>
+        <link rel="stylesheet" href="js/lib/nprogress.css" />
+        <link rel="stylesheet" href="js/lib/cal-heatmap-3.5.0.css" />
+        <link rel="stylesheet" href="js/lib/tomorrow.min.css">
+        <link rel="stylesheet" href="js/lib/select2.min.css">
+        <link rel="stylesheet" href="js/lib/select2-bootstrap.min.css">
+        <link rel="stylesheet" href="css/font-awesome/css/font-awesome-4.2.0.min.css">
+        <link rel="shortcut icon" href="assets/images/favicon.ico">
+    </head>
+
+    <body>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand">ArcGIS Online Assistant</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li id="actionDropdown" class="dropdown" style="visibility: hidden;">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">I want to...
+                                <b class="caret"></b>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li class="dropdown-header">Individual Actions</li>
+                                <li data-action="copyContent">
+                                    <a href="#copyModal" data-toggle="modal">
+                                        <span class="fa fa-lg fa-files-o" aria-hidden="true"></span>
+                                        Copy Content
+                                    </a>
+                                </li>
+                                <li data-action="inspectContent">
+                                    <a href="#">
+                                        <span class="fa fa-lg fa-eye" aria-hidden="true"></span>
+                                        View an Item's JSON
+                                    </a>
+                                </li>
+                                <li data-action="updateWebmapServices">
+                                    <a href="#">
+                                        <span class="fa fa-lg fa-chain-broken" aria-hidden="true"></span>
+                                        Update the URLs of Services in a Web Map
+                                    </a>
+                                </li>
+                                <li data-action="updateContentUrl">
+                                    <a href="#">
+                                        <span class="fa fa-lg fa-external-link" aria-hidden="true"></span>
+                                        Update the URLs of Registered Apps and Services
+                                    </a>
+                                </li>
+                                <li data-action="testRegisteredServices">
+                                    <a href="#">
+                                        <span class="fa fa-lg fa-tasks" aria-hidden="true"></span>
+                                        Verify All Services
+                                    </a>
+                                </li>
+                                <li role="separator" class="divider"></li>
+                                <li class="dropdown-header">Bulk Actions</li>
+                                <li data-action="addRemoveContentTags">
+                                    <a href="#">
+                                        <span class="fa fa-lg fa-tags" aria-hidden="true"></span>
+                                        Add/Remove Tags of Items
+                                    </a>
+                                </li>
+                                <li data-action="deleteContent">
+                                    <a href="#">
+                                        <span class="fa fa-lg fa-trash" aria-hidden="true"></span>
+                                        Delete Items
+                                    </a>
+                                </li>
+                                <li data-action="exportSearchResultsToCSV">
+                                    <a href="#">
+                                        <span class="fa fa-lg fa-table" aria-hidden="true"></span>
+                                        Export Results to CSV
+                                    </a>
+                                </li>
+                                <li data-action="bulkCopyContent">
+                                    <a href="#copyModal" data-toggle="modal">
+                                        <span class="fa fa-lg fa-files-o" aria-hidden="true"></span>
+                                        Bulk Copy Content
+                                    </a>
+                                </li>
+                                <li data-action="bulkReassignOwnership">
+                                    <a href="#">
+                                        <span class="fa fa-lg fa-user" aria-hidden="true"></span>
+                                        Bulk Re-assign Ownership
+                                    </a>
+                                </li>
+                                <li data-action="updateProtection">
+                                    <a href="#">
+                                        <span class="fa fa-lg fa-lock" aria-hidden="true"></span>
+                                        Change Delete Protection Status of Items
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <!--/.navbar-collapse -->
+            </div>
+        </div>
+        <!-- Splash jumbotron -->
+        <div id="splashContainer" class="container col-md-6 center">
+            <div class="jumbotron">
+                <h2>ArcGIS Online Assistant</h2>
+                <p class="lead">A swiss army knife for your ArcGIS Online and Portal for ArcGIS accounts.</p>
+                <p><a class="btn btn-lg btn-success" role="button" data-action="login" disabled="disabled">Log in to get started</a></p>
+                <p><a class="portal-signin" data-toggle="modal">
+                    Click here to log in to a Portal instance
+                </a></p>
+            </div>
+
+            <div class="row marketing">
+                <div class="col-lg-4">
+                    <h4>Inspect</h4>
+                    <p>View the underlying JSON for any item in ArcGIS Online or your Portal.</p>
+                </div>
+                <div class="col-lg-4">
+                    <h4>Update</h4>
+                    <p>Modify the URLs for services in web maps and registered applications.</p>
+                </div>
+                <div class="col-lg-4">
+                    <h4>Copy</h4>
+                    <p>Search for and copy content to your account and other accounts.</p>
+                </div>
+            </div>
+        </div>
+        <div class="container col-md-10 center">
+            <!-- About modal -->
+            <div id="aboutModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="copyModalLabel">About this application</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p>This app uses the <a href="http://resources.arcgis.com/en/help/arcgis-rest-api/index.html#/Working_with_users_groups_and_items/02r3000000mt000000/" target="_blank">ArcGIS REST API</a> to help you work with your ArcGIS Online and Portal for ArcGIS accounts and content.</p>The key features are:
+                            <ul>
+                                <li>
+                                    Copy content between accounts (even on different organizations or Portals)
+                                    <ul>
+                                        <li><em>Files cannot be copied at this time.</em></li>
+                                    </ul>
+                                </li>
+                                <li>Inspect content</li>
+                                <li>Update the URLs for services in a Web Map</li>
+                                <li>Update the URL for registered Web Apps and Map Services</li>
+                                <li>View user stats</li>
+                            </ul>
+                            <p>The code is available on GitHub. Please contribute to this project by submitting<a href="https://github.com/esri/ago-assistant/issues" target="_blank"> ideas, feeback, issues,</a> or <a href="https://github.com/esri/ago-assistant" target="_blank">code</a>.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Changelog modal -->
+            <div id="changelogModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="changelogModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <!-- Changelog content -->
+                    </div>
+                </div>
+            </div>
+            <!-- Portal login modal -->
+            <div id="portalLoginModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="portalLoginLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="portalLoginLabel">Log in to your Portal</h3>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <p>Enter the URL to your Portal</p>
+                                <div class="form-horizontal">
+                                    <div class="form-group has-feedback">
+                                        <div class="col-md-6">
+                                            <input class="form-control portalUrl" type="text" value="https://myportal.com/" id="portalUrl">
+                                            <i class="glyphicon form-control-feedback" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input id="sourceWebTierAuth" type="checkbox">
+                                                    Secured with PKI or IWA
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br>
+                                <p>Enter your credentials:</p>
+                                <div id="portalLoginForm" class="form-inline">
+                                    <div class="form-group">
+                                        <input class="form-control" type="text" placeholder="username" id="portalUsername">
+                                    </div>
+                                    <div class="form-group">
+                                        <input class="form-control" type="password" placeholder="password" id="portalPassword">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="portalCancelBtn" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                            <button id="portalLoginBtn" class="btn btn-primary" data-loading-text="Logging in...">Log in</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Copy content modal -->
+            <div id="copyModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="copyModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="copyModalLabel">Copy content</h3>
+                        </div>
+                        <div class="modal-body">
+                            <div id="destinationChoice">
+                                <p>Select the account you want to copy into.</p>
+                                <button type="button" class="btn btn-default btn-lg btn-block" data-action="copyMyAccount">My account</button>
+                                <button type="button" class="btn btn-default btn-lg btn-block" data-action="copyOtherAccount">Another account</button>
+                            </div>
+                            <div id="destinationForm" style="display:none">
+                                <p>Log in to the account that you want to copy items into. Then simply drag an item into a folder on the right.</p>
+                                <br>
+                                <form>
+                                    <p>Select the destination:</p>
+                                    <div class="form-horizontal">
+                                        <div class="form-group">
+                                            <div class="col-md-6">
+                                                <div class="btn-group" data-toggle="buttons-radio">
+                                                    <button type="button" id="destinationAgolBtn" class="btn btn-default active" data-toggle="button">ArcGIS Online</button>
+                                                    <button type="button" id="destinationPortalBtn" class="btn btn-default" data-toggle="button">Portal for ArcGIS</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group has-feedback">
+                                            <div class="col-md-6">
+                                                <input class="form-control portalUrl" type="text" value="https://www.arcgis.com/" id="destinationUrl">
+                                                <i class="glyphicon form-control-feedback" aria-hidden="true"></i>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="checkbox" id="destinationWebTierAuth">
+                                                    <label>
+                                                        <input id="destWebTierAuthChk" type="checkbox">
+                                                        Secured with PKI or IWA
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <div id="destinationLoginForm" class="form-inline">
+                                        <p>Enter your credentials:</p>
+                                        <div class="form-group">
+                                            <input class="form-control" type="text" placeholder="username" id="destinationUsername">
+                                        </div>
+                                        <div class="form-group">
+                                            <input class="form-control" type="password" placeholder="password" id="destinationPassword">
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="destinationCancelBtn" class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                            <button id="destinationLoginBtn" class="btn btn-primary" data-loading-text="Logging in..." style="display: none">Log in</button>
+                            <button id="destinationEnterpriseBtn" class="btn btn-primary" role="button" data-action="logindestination">Log in</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Edit JSON modal -->
+            <div id="editJsonModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editJsonModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 id="changelogModalLabel">Warning</h3>
+                        </div>
+                        <div class="modal-body">
+                            <p>You are about to directly modify the contents of an item. Do not proceed unless you are absolutely certain of the risks.</p>
+                            <h3><b>THIS IS UNTESTED AND UNSUPPORTED.</b></h3>
+                            <p>Potential risks include:</p>
+                            <ul>
+                                <li>Corrupting your content</li>
+                                <li>Losing access to your items</li>
+                                <li>Breaking apps built on top of your web maps</li>
+                            </ul>
+                            <br>
+                            <div class="checkbox input-lg">
+                                <label><input type="checkbox" class="acknowledgeRisk"> I understand the risks</label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn" data-dismiss="modal">Cancel</button>
+                            <button id="editJsonBtn" class="btn btn-primary disabled">Proceed</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Deep Copy modal -->
+            <div id="deepCopyModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="deepCopyModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="deepCopyModalLabel">Copy information</h3>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <div class="col-md-6">
+                                            <label>Copy Type</label>
+                                            <div id="copySelector" class="btn-group" data-toggle="buttons-radio">
+                                                <button type="button" id="btnSimpleCopy" class="btn btn-primary active" data-toggle="button">Simple</button>
+                                                <button type="button" id="btnFullCopy" class="btn btn-default" data-toggle="button">Full</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group has-feedback" style="display:none" id="serviceNameForm">
+                                        <div class="col-md-6">
+                                            <label>Service Name</label>
+                                            <input class="form-control" type="text" value="" id="serviceName">
+                                            <i class="glyphicon form-control-feedback" aria-hidden="true"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="alert alert-info">
+                                <p><strong>Simple copy</strong> creates a reference to the original service 
+                                    in the destination account.</p>
+                                <p><strong>Full copy (EXPERIMENTAL)</strong> replicates the original service in the
+                                    destination account and harvests all of its associated data.</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-default" data-dismiss="modal" id="btnCancelCopy">Cancel</button>
+                            <button type="submit" class="btn btn-primary disabled" id="btnCopyService">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Bulk Copy Warning -->
+            <div id="bulkCopyWarningModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="copyWarningModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                            <h3 id="copyWarningModalLabel">Copy Warning</h3>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-warning copywarningtxt">
+                                <p><strong>Warning:</strong> You are responsible for ensuring the destination Portal is approved to hold the type of data you are copying.</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-default" data-dismiss="modal" id="btnCancelBulkCopy">Cancel</button>
+                            <button type="button" class="btn btn-primary disabled" id="btnBulkCopyServices">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Item containers -->
+            <div id="itemsContainer" class="row">
+                <div id="itemsArea" class="col-md-5 itemArea">
+                    <!-- content goes here -->
+                </div>
+                <div id="dropArea" class="col-md-7 itemArea">
+                    <!-- dropped items will go here -->
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            var dojoConfig = {
+                async: true,
+                packages: [
+                    {name: "jquery", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "jquery-1.10.2.min"},
+                    {name: "jquery.ui", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "jquery-ui-1.11.4.min"},
+                    {name: "jquery.bootstrap", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib/bootstrap/js", main: "bootstrap-3.3.4.min"},
+                    {name: "bootstrap-shim", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "bootstrap-shim"},
+                    {name: "mustache", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "mustache-0.7.2"},
+                    {name: "d3", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "d3-3.4.13.min"},
+                    {name: "nprogress", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "nprogress-0.1.6"},
+                    {name: "cal-heatmap", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "cal-heatmap-3.5.0.min"},
+                    {name: "highlight", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "highlight-8.3.min"},
+                    {name: "typeahead", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "typeahead.jquery"},
+                    {name: "select2", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/lib", main: "select2.full.min"},
+                    {name: "portal", location: location.pathname.replace(/\/[^/]*$/, '') + "/js/portal"}
+                ],
+            };
+        </script>
+        <script src="js/lib/arcgis/dojo/dojo.js"></script>
+        <script src="js/main.js"></script>
+
+    </body>
+
+</html>
